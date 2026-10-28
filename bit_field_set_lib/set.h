@@ -4,36 +4,42 @@
 class set {
     bit_field _b_field;
 public:
-    set(size_t size);
-    set(const set& other);
-    set(set&& other);
-    set(const bit_field& other);
+    inline set(size_t size = 1) :_b_field(size) {}
+    inline set(const set& other) :_b_field(other._b_field) {}
+    inline set(set&& other) :_b_field(std::move(other._b_field)) {}
+    inline set(const bit_field& other) :_b_field(other) {}
 
-    operator bit_field() const;
+    inline operator bit_field() const noexcept { return _b_field; }
 
-    void insert(size_t num);
-    void erase(size_t num);
+    inline void insert(size_t num) { _b_field.set_bit(num); }
+    inline void erase(size_t num) { _b_field.reset_bit(num); }
 
-    set& operator+=(size_t num);
-    set& operator-=(size_t num);
+    inline bool is_exist(size_t num)const noexcept {if (num >= _b_field.size()) return 0;return _b_field.get_bit(num);}
+    inline size_t size()const noexcept { return _b_field.size(); }
+
+    inline set& operator+=(size_t num) { insert(num); return (*this); }
+    inline set& operator-=(size_t num) { erase(num); return(*this); }
 
     set operator+(size_t num)const;
     set operator-(size_t num)const;
 
-    set& operator -=(const set& other);
-    set& operator +=(const set& other);
-    set& operator *=(const set& other);
+    inline set& operator -=(const set& other) { _b_field &= ~(other._b_field); return (*this); }
+    inline set& operator +=(const set& other) { _b_field |= other._b_field; return (*this); }
+    inline set& operator *=(const set& other) { _b_field &= other._b_field; return (*this); }
 
-    set& operator -(const set& other)const;
-    set& operator +(const set& other)const;
-    set& operator *(const set& other)const;
+    set operator -(const set& other)const;
+    set operator +(const set& other)const;
+    set operator *(const set& other)const;
 
-    set& operator= (const set& other);
-    set& operator= (set&& other);
+    inline set& operator= (const set& other)noexcept { _b_field = other._b_field; return (*this); }
+    inline set& operator= (set&& other)noexcept { _b_field = std::move(other._b_field); return (*this); }
 
-    bool operator ==(const set& other)const;
+    inline bool operator ==(const set& other)const noexcept { return _b_field == other._b_field; }
     inline bool operator !=(const set& other)const { return !((*this) == other); }
 
-    friend std::ostream& operator>>(std::ostream& out, const set& other);
-    friend std::iostream& operator<<(std::iostream& in, set& other);
+    friend std::ostream& operator<<(std::ostream& out, const set& other);
+    friend std::iostream& operator>>(std::iostream& in, set& other);
+
 };
+
+set simple_numbers(size_t size);

@@ -1,6 +1,7 @@
 #pragma once
 #include<stdexcept>
 #include<iostream>
+#include<cctype>
 
 class bit_field {
     unsigned int* _data;
@@ -20,15 +21,18 @@ public:
     void set_bit(size_t pos);
     void reset_bit(size_t pos);
 
-    bit_field& operator =(const bit_field& other);
-    bit_field& operator =(bit_field&& other);
+    bit_field& operator =(const bit_field& other)noexcept;
+    bit_field& operator =(bit_field&& other)noexcept;
 
     bit_field& operator &=(const bit_field& other);
     bit_field& operator |= (const bit_field& other);
 
     bit_field operator &(const bit_field& other)const;
     bit_field operator |(const bit_field& other)const;
-    bit_field operator ~();
+    bit_field operator ~()const noexcept;
+
+    bool operator ==(const bit_field& other)const noexcept;
+    bool operator !=(const bit_field& other)const noexcept{ return !((*this) == other); }
 
     friend std::ostream& operator <<(std::ostream & out, const bit_field & other);
     friend std::iostream& operator >>(std::iostream& in, bit_field& other);

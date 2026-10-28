@@ -1,7 +1,7 @@
 #include "bit_field.h"
 size_t bit_field::index(size_t pos)const  {
     if (pos >= _size) throw std::out_of_range("tried get_index with wrong pos");
-    return pos % (sizeof(unsigned int) * 8);
+    return pos / (sizeof(unsigned int) * 8);
 }
 
 bit_field::bit_field(size_t size) {
@@ -14,8 +14,6 @@ bit_field::bit_field(size_t size) {
 }
 
 bit_field::bit_field(const bit_field& other) {
-    if(_data!=nullptr)
-        delete[]_data;
     _size = other._size;
     _data = new unsigned int[int_amount()];
     for (int i = 0; i < int_amount(); i++) {
@@ -24,8 +22,6 @@ bit_field::bit_field(const bit_field& other) {
 }
 
 bit_field::bit_field(bit_field&& other) {
-    if(_data!=nullptr)
-        delete[]_data;
     _size = other._size;
     _data = other._data;
     other._data = nullptr;
@@ -49,11 +45,11 @@ void bit_field::set_bit(size_t pos) {
 
 void bit_field::reset_bit(size_t pos) {
     if (pos >= _size)throw std::out_of_range("tried reset_bit with too big pos");
-    _data[index(pos)] & (~mask(pos));
+    _data[index(pos)] &= (~mask(pos));
 }
 
-bit_field& bit_field::operator=(const bit_field& other){
-    if (this == &other) throw std::logic_error("tried =");
+bit_field& bit_field::operator=(const bit_field& other)noexcept{
+    if (this == &other) return (*this);
     if (_data != nullptr)
         delete[]_data;
     _size = other._size;
@@ -64,8 +60,8 @@ bit_field& bit_field::operator=(const bit_field& other){
     return (*this);
 }
 
-bit_field& bit_field::operator=(bit_field&& other) {
-    if (this == &other) throw std::logic_error("tried =");
+bit_field& bit_field::operator=(bit_field&& other)noexcept {
+    if (this == &other) return (*this);
     if (_data != nullptr)
         delete[]_data;
     _size = other._size;
@@ -103,10 +99,21 @@ bit_field bit_field::operator |(const bit_field& other)const {
     return res;
 }
 
-bit_field bit_field::operator ~() {
+bit_field bit_field::operator ~()const noexcept {
+    bit_field res(*this);
     for (int i = 0; i < int_amount(); i++) {
-        _data[i] = ~_data[i];
+        res._data[i] = ~_data[i];
     }
+    return res;
+}
+
+bool bit_field::operator== (const bit_field& other)const noexcept{
+    if (_size != other._size) return false;
+    for (int i = 0; i < int_amount(); i++) {
+        if (_data[i] != other._data[i])
+            return false;
+    }
+    return true;
 }
 
 std::ostream& operator<<(std::ostream& out, const bit_field& other) {
